@@ -7,6 +7,11 @@ repository = "https://github.com/jmagnuson/libevent-rs"
 license = "MIT/Apache-2.0"
 edition = "2018"
 
+[workspace]
+members = ['example-hello']
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [features]
 default = [ "openssl", "threading" ]
 static = [ "libevent-sys/static" ]
