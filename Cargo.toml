@@ -21,4 +21,5 @@ openssl_bundled = [ "libevent-sys/openssl_bundled", "threading" ]
 threading = [ "libevent-sys/threading" ]
 
 [dependencies]
+bitflags = "1.2"
 libevent-sys = { version = "0.2", path = "libevent-sys" }
