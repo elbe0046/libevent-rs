@@ -4,6 +4,7 @@ use bitflags::bitflags;
 use std::io;
 use std::os::raw::{c_int, c_short, c_void};
 use std::time::Duration;
+use std::sync::atomic::{AtomicPtr, Ordering};
 use libevent_sys;
 
 use crate::to_timeval;
@@ -18,7 +19,7 @@ pub type EventCallbackCtx = *mut c_void;
 pub type EventCallbackFlags = c_short;
 
 pub struct EventBase {
-    base: *mut libevent_sys::event_base
+    base: AtomicPtr<libevent_sys::event_base>
 }
 
 /// The handle that abstracts over libevent's API in Rust.
@@ -33,21 +34,21 @@ impl EventBase {
         }
 
         Ok(EventBase {
-            base,
+            base: AtomicPtr::new(base),
         })
     }
 
     pub fn as_inner(&self) -> *const libevent_sys::event_base {
-        self.base as *const libevent_sys::event_base
+        self.base.load(Ordering::Relaxed) as *const libevent_sys::event_base
     }
 
     pub fn as_inner_mut(&mut self) -> *mut libevent_sys::event_base {
-        self.base
+        self.base.load(Ordering::Relaxed)
     }
 
     pub fn loop_(&self, flags: LoopFlags) -> ExitReason {
         let exit_code = unsafe {
-            libevent_sys::event_base_loop(self.base, flags.bits() as i32) as i32
+            libevent_sys::event_base_loop(self.base.load(Ordering::Relaxed), flags.bits() as i32) as i32
         };
 
         match exit_code {
@@ -56,10 +57,10 @@ impl EventBase {
                     // Technically mutually-exclusive from `got_break`, but
                     // the check in `event_base_loop` comes first, so the logic
                     // here matches.
-                    if libevent_sys::event_base_got_exit(self.base) != 0i32 {
+                    if libevent_sys::event_base_got_exit(self.base.load(Ordering::Relaxed)) != 0i32 {
                         ExitReason::GotExit
                     }
-                    else if libevent_sys::event_base_got_break(self.base) != 0i32 {
+                    else if libevent_sys::event_base_got_break(self.base.load(Ordering::Relaxed)) != 0i32 {
                         ExitReason::GotBreak
                     } else {
                         // TODO: This should match flags for `EVLOOP_ONCE`, `_NONBLOCK`, etc.
@@ -77,19 +78,19 @@ impl EventBase {
         let tv = to_timeval(timeout);
         unsafe {
             let tv_cast = &tv as *const libevent_sys::timeval;
-            libevent_sys::event_base_loopexit(self.base, tv_cast) as i32
+            libevent_sys::event_base_loopexit(self.base.load(Ordering::Relaxed), tv_cast) as i32
         }
     }
 
     pub fn loopbreak(&self) -> i32 {
         unsafe {
-            libevent_sys::event_base_loopbreak(self.base) as i32
+            libevent_sys::event_base_loopbreak(self.base.load(Ordering::Relaxed)) as i32
         }
     }
 
     pub fn loopcontinue(&self) -> i32 {
         unsafe {
-            libevent_sys::event_base_loopcontinue(self.base) as i32
+            libevent_sys::event_base_loopcontinue(self.base.load(Ordering::Relaxed)) as i32
         }
     }
 
