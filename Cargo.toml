@@ -13,8 +13,9 @@ members = ['examples/hello']
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = [ "openssl", "threading" ]
+default = [ "pkgconfig", "openssl", "threading" ]
 static = [ "libevent-sys/static" ]
+pkgconfig = [ "libevent-sys/pkgconfig" ]
 bundled = [ "static", "libevent-sys/bundled" ]
 openssl = [ "libevent-sys/openssl" ]
 openssl_bundled = [ "libevent-sys/openssl_bundled", "threading" ]
@@ -22,4 +23,4 @@ threading = [ "libevent-sys/threading" ]
 
 [dependencies]
 bitflags = "1.2"
-libevent-sys = { version = "0.2", path = "libevent-sys" }
+libevent-sys = { version = "0.2", path = "libevent-sys", default-features = false }
