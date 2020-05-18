@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use bitflags::bitflags;
+use std::convert::From;
 use std::io;
 use std::os::raw::{c_int, c_short, c_void};
 use std::time::Duration;
@@ -172,6 +173,14 @@ impl EventBase {
         let tv = to_timeval(timeout);
         unsafe {
             libevent_sys::event_add(event.inner.inner, &tv)
+        }
+    }
+}
+
+impl From<*mut libevent_sys::event_base> for EventBase {
+    fn from(base: *mut libevent_sys::event_base) -> EventBase {
+        EventBase {
+            base: AtomicPtr::new(base)
         }
     }
 }

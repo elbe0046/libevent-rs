@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use std::convert::From;
 use std::io;
 use std::os::raw::{c_int, c_short};
 use std::time::Duration;
@@ -147,5 +148,13 @@ impl Libevent {
         F: FnMut(EventHandleInner, EventFlags) + 'static
     {
         self.add_timer(timeout, cb, EventFlags::empty())
+    }
+}
+
+impl From<EventBase> for Libevent {
+    fn from(base: EventBase) -> Libevent {
+        Libevent {
+            base,
+        }
     }
 }
