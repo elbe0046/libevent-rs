@@ -31,6 +31,6 @@ version = "0.9"
 optional = true
 
 [build-dependencies]
-bindgen = "0.53"
+bindgen = { version = "0.53", git = "https://github.com/elbe0046/rust-bindgen", branch = "bindgen-extra-clang-args" }
 cmake = { version = "0.1", optional = true }
 pkg-config = { version = "0.3", optional = true }
