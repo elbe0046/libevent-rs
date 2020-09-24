@@ -200,6 +200,14 @@ fn generate_bindings(include_paths: Vec<String>, out_path: impl AsRef<Path>) {
     bindings
         .write_to_file(out_path.as_ref().join("bindings.rs"))
         .expect("Failed to write bindings");
+
+    let mut file = std::fs::File::open(out_path.as_ref().join("bindings.rs")).expect("Failed to open file");
+    let mut contents = String::new();
+    use std::io::Read;
+    file.read_to_string(&mut contents).unwrap_or_else(|e| {
+        panic!("Failed to read file to string: {:?}", e);
+    });
+    panic!("Start of libevent bindings, TARGET: {}, HOST: {}:\n\n{}\n\nEnd of libevent bindings", target, host, contents);
 }
 
 #[cfg(not(feature = "buildtime_bindgen"))]
